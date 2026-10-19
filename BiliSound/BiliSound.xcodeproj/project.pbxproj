@@ -247,7 +247,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		{uid('PHASE_SOURCES')} /* Sources */ = {{
+		8BB8ABC24AB723F99D4DD920 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
