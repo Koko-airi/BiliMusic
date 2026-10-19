@@ -1,0 +1,200 @@
+import SwiftUI
+
+/// Main container view with bottom tab bar, docked mini player, and full-screen player presentation
+public struct MainTabView: View {
+    @StateObject private var playerManager = AudioPlayerManager.shared
+    @State private var playlists: [Playlist] = SampleData.defaultPlaylists
+    
+    @State private var isFullScreenPresented: Bool = false
+    @State private var quickPlayInput: String = ""
+    @State private var isQuickPlaying: Bool = false
+    @State private var quickPlayError: String?
+    
+    public init() {}
+    
+    public var body: some View {
+        ZStack(alignment: .bottom) {
+            TabView {
+                // Tab 1: Playlists
+                PlaylistsView(playlists: $playlists, playerManager: playerManager)
+                    .tabItem {
+                        Label("Library", systemImage: "music.note.list")
+                    }
+                
+                // Tab 2: Quick Bilibili Stream
+                quickStreamTab
+                    .tabItem {
+                        Label("Quick Stream", systemImage: "magnifyingglass")
+                    }
+                
+                // Tab 3: Session & Settings
+                settingsTab
+                    .tabItem {
+                        Label("Session & Settings", systemImage: "gearshape")
+                    }
+            }
+            
+            // Docked Mini Player
+            if playerManager.currentSong != nil {
+                NowPlayingMiniBar(playerManager: playerManager) {
+                    isFullScreenPresented = true
+                }
+                .padding(.bottom, 50)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .fullScreenCover(isPresented: $isFullScreenPresented) {
+            FullScreenPlayerView(playerManager: playerManager)
+        }
+    }
+    
+    // MARK: - Quick Stream Tab
+    
+    private var quickStreamTab: some View {
+        NavigationStack {
+            Form {
+                Section(header: Text("Stream Any Bilibili Audio")) {
+                    Text("Paste any Bilibili video URL or BV ID to instantly stream in pure audio mode without video overhead.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    TextField("https://www.bilibili.com/video/BV... or BV...", text: $quickPlayInput)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                    
+                    if let err = quickPlayError {
+                        Text(err)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
+                    
+                    Button(action: startQuickPlay) {
+                        HStack {
+                            if isQuickPlaying {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            } else {
+                                Image(systemName: "play.circle.fill")
+                            }
+                            Text("Play Audio Stream")
+                                .fontWeight(.semibold)
+                        }
+                    }
+                    .disabled(quickPlayInput.isEmpty || isQuickPlaying)
+                }
+                
+                Section(header: Text("Feature 1 Status")) {
+                    HStack {
+                        Image(systemName: "headphones")
+                            .foregroundColor(.green)
+                        Text("Music Mode (Audio-Only)")
+                        Spacer()
+                        Text("Active")
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+            .navigationTitle("Quick Stream")
+        }
+    }
+    
+    // MARK: - Settings & Session Tab
+    
+    private var settingsTab: some View {
+        NavigationStack {
+            List {
+                Section(header: Text("Playback Engine")) {
+                    Toggle("Default to Music Mode (Sound Only)", isOn: $playerManager.musicModeOnly)
+                    
+                    HStack {
+                        Text("Active Stream Quality")
+                        Spacer()
+                        Text(playerManager.activeAudioQuality)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Section(header: Text("Session Tracking (Feature 3)")) {
+                    HStack {
+                        Text("Current Session Plays")
+                        Spacer()
+                        Text("\(playerManager.currentSession.playedSongIds.count) tracks")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Playlist Loops Completed")
+                        Spacer()
+                        Text("\(playerManager.currentSession.loopCycleCount)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Button(role: .destructive, action: {
+                        playerManager.currentSession.reset()
+                    }) {
+                        Text("Reset Current Session History")
+                    }
+                }
+                
+                Section(header: Text("About BiliSound")) {
+                    HStack {
+                        Text("Version")
+                        Spacer()
+                        Text("1.0.0 (iOS 26.2.1 / 18.x Ready)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text("BiliSound is built for pure audio listening with multi-version track mapping and fair session shuffle.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .navigationTitle("Settings & Session")
+        }
+    }
+    
+    private func startQuickPlay() {
+        guard let parsed = BilibiliURLParser.parse(input: quickPlayInput) else {
+            quickPlayError = "Invalid BV ID or URL."
+            return
+        }
+        
+        isQuickPlaying = true
+        quickPlayError = nil
+        
+        Task {
+            do {
+                let details = try await BilibiliAPIService.shared.fetchVideoDetails(bvid: parsed.bvid, pageIndex: parsed.pageIndex)
+                let version = SongVersion(
+                    name: "Direct Stream",
+                    bvid: details.bvid,
+                    cid: details.cid,
+                    uploader: details.uploader,
+                    duration: details.duration,
+                    audioQuality: "192kbps DASH",
+                    picUrl: details.picUrl
+                )
+                let song = Song(
+                    title: details.title,
+                    artist: details.uploader,
+                    artworkUrl: details.picUrl,
+                    versions: [version]
+                )
+                let tempPlaylist = Playlist(name: "Direct Stream", songs: [song])
+                
+                await MainActor.run {
+                    self.playerManager.play(song: song, specificVersion: version, in: tempPlaylist)
+                    self.isQuickPlaying = false
+                    self.isFullScreenPresented = true
+                    self.quickPlayInput = ""
+                }
+            } catch {
+                await MainActor.run {
+                    self.isQuickPlaying = false
+                    self.quickPlayError = error.localizedDescription
+                }
+            }
+        }
+    }
+}
