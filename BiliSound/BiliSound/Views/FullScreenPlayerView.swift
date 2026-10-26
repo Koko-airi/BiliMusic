@@ -2,6 +2,7 @@ import SwiftUI
 import AVKit
 
 /// Feature 1, 2, 3, 4, 5: Complete immersive full-screen music player
+@MainActor
 public struct FullScreenPlayerView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var playerManager: AudioPlayerManager
@@ -72,7 +73,7 @@ public struct FullScreenPlayerView: View {
             }
         }
         .sheet(isPresented: $showingVersionSheet) {
-            if var song = playerManager.currentSong, let playlist = playerManager.currentPlaylist {
+            if let song = playerManager.currentSong, let playlist = playerManager.currentPlaylist {
                 VersionManagerSheet(
                     song: Binding(
                         get: { playerManager.currentSong ?? song },

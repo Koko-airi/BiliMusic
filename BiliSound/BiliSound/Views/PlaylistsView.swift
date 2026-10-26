@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Playlists collection screen displaying user libraries and curated Bilibili collections
+@MainActor
 public struct PlaylistsView: View {
     @Binding var playlists: [Playlist]
     @ObservedObject var playerManager: AudioPlayerManager

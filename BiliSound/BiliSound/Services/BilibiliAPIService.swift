@@ -68,7 +68,7 @@ public final class BilibiliAPIService {
             "Referer": "https://www.bilibili.com",
             "Origin": "https://www.bilibili.com"
         ]
-        let cookieStr = BiliAccountManager.shared.cookieHeaderString
+        let cookieStr = BiliAccountManager.currentCookieHeader()
         if !cookieStr.isEmpty {
             headers["Cookie"] = cookieStr
         }
@@ -84,7 +84,7 @@ public final class BilibiliAPIService {
             throw BiliAPIError.invalidURL
         }
         
-        var request = URLRequest(pagelistUrl)
+        var request = URLRequest(url: pagelistUrl)
         request.httpMethod = "GET"
         for (key, value) in Self.defaultHeaders {
             request.setValue(value, forHTTPHeaderField: key)
@@ -137,7 +137,7 @@ public final class BilibiliAPIService {
         // Step 2: Try enriching title/uploader with view API if user is logged in (with graceful fallback)
         var uploader = "Bilibili Artist"
         if let viewUrl = URL(string: "https://api.bilibili.com/x/web-interface/view?bvid=\(bvid)") {
-            var viewReq = URLRequest(viewUrl)
+            var viewReq = URLRequest(url: viewUrl)
             for (key, value) in Self.defaultHeaders {
                 viewReq.setValue(value, forHTTPHeaderField: key)
             }

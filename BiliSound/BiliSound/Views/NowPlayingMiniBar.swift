@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Floating mini-player bar docked above the tab bar with quick controls (ff5, play/pause, skip)
+@MainActor
 public struct NowPlayingMiniBar: View {
     @ObservedObject var playerManager: AudioPlayerManager
     let onTap: () -> Void

@@ -16,14 +16,14 @@ public final class BilibiliAudioAssetFactory: NSObject, AVAssetResourceLoaderDel
     }
     
     /// Creates an AVURLAsset configured with the required Bilibili CDN headers.
-    public func createAsset(for streamUrl: URL, bvid: String) -> AVURLAsset {
+    @MainActor public func createAsset(for streamUrl: URL, bvid: String) -> AVURLAsset {
         var headers: [String: String] = [
             "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
             "Referer": "https://www.bilibili.com/video/\(bvid)",
             "Origin": "https://www.bilibili.com"
         ]
         
-        let cookies = BiliAccountManager.shared.cookieHeaderString
+        let cookies = BiliAccountManager.currentCookieHeader()
         if !cookies.isEmpty {
             headers["Cookie"] = cookies
         }

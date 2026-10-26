@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Main container view with bottom tab bar, docked mini player, and full-screen player presentation
+@MainActor
 public struct MainTabView: View {
     @StateObject private var playerManager = AudioPlayerManager.shared
     @ObservedObject private var accountManager = BiliAccountManager.shared

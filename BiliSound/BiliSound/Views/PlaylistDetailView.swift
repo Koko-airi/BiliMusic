@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Detailed view of a playlist with sequential play, session shuffle, and multi-version management
+@MainActor
 public struct PlaylistDetailView: View {
     @Binding var playlist: Playlist
     @ObservedObject var playerManager: AudioPlayerManager

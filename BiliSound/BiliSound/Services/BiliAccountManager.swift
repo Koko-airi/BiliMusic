@@ -26,14 +26,14 @@ public final class BiliAccountManager: ObservableObject {
     
     // MARK: - Persistence Keys
     
-    private let kSessdata = "bili_sessdata"
-    private let kBiliJct = "bili_jct"
-    private let kDedeUserId = "bili_dede_user_id"
-    private let kBuvid3 = "bili_buvid3"
-    private let kUname = "bili_uname"
-    private let kFace = "bili_face"
-    private let kMid = "bili_mid"
-    private let kVipType = "bili_vip_type"
+    private static let kSessdata = "bili_sessdata"
+    private static let kBiliJct = "bili_jct"
+    private static let kDedeUserId = "bili_dede_user_id"
+    private static let kBuvid3 = "bili_buvid3"
+    private static let kUname = "bili_uname"
+    private static let kFace = "bili_face"
+    private static let kMid = "bili_mid"
+    private static let kVipType = "bili_vip_type"
     
     private init() {
         loadPersistedState()
@@ -46,33 +46,39 @@ public final class BiliAccountManager: ObservableObject {
     
     // MARK: - Cookie Header Construction
     
+    /// Thread-safe nonisolated function to construct the Cookie header without MainActor constraints
+    public static nonisolated func currentCookieHeader() -> String {
+        let defaults = UserDefaults.standard
+        let sess = defaults.string(forKey: kSessdata) ?? ""
+        let jct = defaults.string(forKey: kBiliJct) ?? ""
+        let dede = defaults.string(forKey: kDedeUserId) ?? ""
+        let buvid = defaults.string(forKey: kBuvid3) ?? "9C300E53-8E87-7A03-7F00-F3F78070DA7A62591infoc"
+        
+        var cookies: [String] = []
+        if !sess.isEmpty { cookies.append("SESSDATA=\(sess)") }
+        if !jct.isEmpty { cookies.append("bili_jct=\(jct)") }
+        if !dede.isEmpty { cookies.append("DedeUserID=\(dede)") }
+        if !buvid.isEmpty { cookies.append("buvid3=\(buvid)") }
+        return cookies.joined(separator: "; ")
+    }
+    
     /// Returns the combined Cookie string for HTTP request headers
     public var cookieHeaderString: String {
-        var cookies: [String] = []
-        if !sessdata.isEmpty { cookies.append("SESSDATA=\(sessdata)") }
-        if !biliJct.isEmpty { cookies.append("bili_jct=\(biliJct)") }
-        if !dedeUserId.isEmpty { cookies.append("DedeUserID=\(dedeUserId)") }
-        if !buvid3.isEmpty {
-            cookies.append("buvid3=\(buvid3)")
-        } else {
-            // Default visitor fallback buvid3
-            cookies.append("buvid3=9C300E53-8E87-7A03-7F00-F3F78070DA7A62591infoc")
-        }
-        return cookies.joined(separator: "; ")
+        Self.currentCookieHeader()
     }
     
     // MARK: - Persistence
     
     private func loadPersistedState() {
         let defaults = UserDefaults.standard
-        self.sessdata = defaults.string(forKey: kSessdata) ?? ""
-        self.biliJct = defaults.string(forKey: kBiliJct) ?? ""
-        self.dedeUserId = defaults.string(forKey: kDedeUserId) ?? ""
-        self.buvid3 = defaults.string(forKey: kBuvid3) ?? ""
-        self.uname = defaults.string(forKey: kUname) ?? "Not Logged In"
-        self.face = defaults.string(forKey: kFace)
-        self.mid = defaults.object(forKey: kMid) as? Int
-        self.vipType = defaults.integer(forKey: kVipType)
+        self.sessdata = defaults.string(forKey: Self.kSessdata) ?? ""
+        self.biliJct = defaults.string(forKey: Self.kBiliJct) ?? ""
+        self.dedeUserId = defaults.string(forKey: Self.kDedeUserId) ?? ""
+        self.buvid3 = defaults.string(forKey: Self.kBuvid3) ?? ""
+        self.uname = defaults.string(forKey: Self.kUname) ?? "Not Logged In"
+        self.face = defaults.string(forKey: Self.kFace)
+        self.mid = defaults.object(forKey: Self.kMid) as? Int
+        self.vipType = defaults.integer(forKey: Self.kVipType)
         self.isLoggedIn = !self.sessdata.isEmpty
         updateVipLabel()
     }
@@ -90,10 +96,10 @@ public final class BiliAccountManager: ObservableObject {
         if !buvid3.isEmpty { self.buvid3 = buvid3 }
         self.isLoggedIn = !sessdata.isEmpty
         
-        defaults.set(sessdata, forKey: kSessdata)
-        defaults.set(biliJct, forKey: kBiliJct)
-        defaults.set(dedeUserId, forKey: kDedeUserId)
-        defaults.set(self.buvid3, forKey: kBuvid3)
+        defaults.set(sessdata, forKey: Self.kSessdata)
+        defaults.set(biliJct, forKey: Self.kBiliJct)
+        defaults.set(dedeUserId, forKey: Self.kDedeUserId)
+        defaults.set(self.buvid3, forKey: Self.kBuvid3)
         
         Task {
             await fetchUserInfo()

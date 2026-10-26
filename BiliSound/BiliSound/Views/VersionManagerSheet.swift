@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Feature 4: Sheet to inspect, test, toggle, and add video versions for a song
+@MainActor
 public struct VersionManagerSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var playerManager: AudioPlayerManager

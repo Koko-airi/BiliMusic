@@ -3,6 +3,7 @@ import WebKit
 
 /// Sheet allowing users to log in to their Bilibili account via official Web Login (QR code, SMS, password)
 /// or manual SESSDATA input to unlock VIP high-bitrate audio and avoid WAF restrictions.
+@MainActor
 public struct BilibiliLoginSheet: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var accountManager = BiliAccountManager.shared

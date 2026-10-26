@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Sheet for importing songs or adding video versions by pasting Bilibili URLs or BV IDs
+@MainActor
 public struct AddSongSheet: View {
     @Environment(\.dismiss) private var dismiss
     

@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// Feature 3: Sheet to inspect the listening session and verify non-repeating shuffle behavior
+@MainActor
 public struct SessionHistoryView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var playerManager: AudioPlayerManager
