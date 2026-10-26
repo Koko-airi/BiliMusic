@@ -16,7 +16,6 @@ public struct ScrubberBar: View {
     ) {
         self.currentTime = currentTime
         self.duration = duration
-        onSeek = onSeek
         self.onSeek = onSeek
     }
     

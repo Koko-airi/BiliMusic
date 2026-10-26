@@ -13,6 +13,7 @@
 		C7BD7F9D26F480E48DB9A2D4 /* Song.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7AF3A64A8B117E5730BBD5 /* Song.swift */; };
 		E63BA48FB52FBC9575E3770E /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BD7E5ECA8382B1A500CD899 /* Playlist.swift */; };
 		44A348032D162292E057081D /* PlaybackMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BC410ED11E46518733CB256 /* PlaybackMode.swift */; };
+		C5C1B3FBD985A1E2AE434BEB /* BiliAccountManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04ED7A791A23967CB8B056E /* BiliAccountManager.swift */; };
 		D5917325E80AEB8DCFFA1407 /* BilibiliURLParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A97C7F1D6D87E70D465476B /* BilibiliURLParser.swift */; };
 		FB326BD18985F7EE376245BB /* BilibiliAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C8916D7FAAAE4DB3C0F1F4E /* BilibiliAPIService.swift */; };
 		33769383C0215133E1B5566C /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC46EB5E332BEC2CF6152B1 /* SampleData.swift */; };
@@ -27,6 +28,7 @@
 		E4075A555EA124C64542359E /* VersionManagerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6782EB05431A077B159EAA /* VersionManagerSheet.swift */; };
 		71B3EFADF059157B98C88E11 /* SessionHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E1A7DF1704F8E3F2DEDC82 /* SessionHistoryView.swift */; };
 		683127EAE0843BA609BAD7A8 /* AddSongSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68609B0B71B8FB4EE13FF989 /* AddSongSheet.swift */; };
+		6E7E71D3B5D705808F375CF9 /* BilibiliLoginSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E22DC6B1BCE8D8AE12D11C9F /* BilibiliLoginSheet.swift */; };
 		704C0A562001C7B7BF7717FE /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EFF0BA864DD911D649E33F /* PlaylistDetailView.swift */; };
 		AAD0ADB514D3711CBE3E527D /* PlaylistsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F321C1328E68078E753F7D21 /* PlaylistsView.swift */; };
 		A524D5B758CF5AB022FF9DB6 /* FullScreenPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE87207907C4C9D02524818F /* FullScreenPlayerView.swift */; };
@@ -43,6 +45,7 @@
 		3E7AF3A64A8B117E5730BBD5 /* Song.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Song.swift"; sourceTree = "<group>"; };
 		5BD7E5ECA8382B1A500CD899 /* Playlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Playlist.swift"; sourceTree = "<group>"; };
 		7BC410ED11E46518733CB256 /* PlaybackMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackMode.swift"; sourceTree = "<group>"; };
+		D04ED7A791A23967CB8B056E /* BiliAccountManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BiliAccountManager.swift"; sourceTree = "<group>"; };
 		4A97C7F1D6D87E70D465476B /* BilibiliURLParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BilibiliURLParser.swift"; sourceTree = "<group>"; };
 		7C8916D7FAAAE4DB3C0F1F4E /* BilibiliAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BilibiliAPIService.swift"; sourceTree = "<group>"; };
 		8EC46EB5E332BEC2CF6152B1 /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SampleData.swift"; sourceTree = "<group>"; };
@@ -57,6 +60,7 @@
 		FB6782EB05431A077B159EAA /* VersionManagerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VersionManagerSheet.swift"; sourceTree = "<group>"; };
 		53E1A7DF1704F8E3F2DEDC82 /* SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionHistoryView.swift"; sourceTree = "<group>"; };
 		68609B0B71B8FB4EE13FF989 /* AddSongSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AddSongSheet.swift"; sourceTree = "<group>"; };
+		E22DC6B1BCE8D8AE12D11C9F /* BilibiliLoginSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "BilibiliLoginSheet.swift"; sourceTree = "<group>"; };
 		05EFF0BA864DD911D649E33F /* PlaylistDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaylistDetailView.swift"; sourceTree = "<group>"; };
 		F321C1328E68078E753F7D21 /* PlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaylistsView.swift"; sourceTree = "<group>"; };
 		EE87207907C4C9D02524818F /* FullScreenPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FullScreenPlayerView.swift"; sourceTree = "<group>"; };
@@ -101,6 +105,7 @@
 		71BEE56A7AB2A21372CEF785 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				D04ED7A791A23967CB8B056E /* BiliAccountManager.swift */,
 				4A97C7F1D6D87E70D465476B /* BilibiliURLParser.swift */,
 				7C8916D7FAAAE4DB3C0F1F4E /* BilibiliAPIService.swift */,
 				8EC46EB5E332BEC2CF6152B1 /* SampleData.swift */,
@@ -137,6 +142,7 @@
 				FB6782EB05431A077B159EAA /* VersionManagerSheet.swift */,
 				53E1A7DF1704F8E3F2DEDC82 /* SessionHistoryView.swift */,
 				68609B0B71B8FB4EE13FF989 /* AddSongSheet.swift */,
+				E22DC6B1BCE8D8AE12D11C9F /* BilibiliLoginSheet.swift */,
 				05EFF0BA864DD911D649E33F /* PlaylistDetailView.swift */,
 				F321C1328E68078E753F7D21 /* PlaylistsView.swift */,
 				EE87207907C4C9D02524818F /* FullScreenPlayerView.swift */,
@@ -257,6 +263,7 @@
 				C7BD7F9D26F480E48DB9A2D4 /* Song.swift in Sources */,
 				E63BA48FB52FBC9575E3770E /* Playlist.swift in Sources */,
 				44A348032D162292E057081D /* PlaybackMode.swift in Sources */,
+				C5C1B3FBD985A1E2AE434BEB /* BiliAccountManager.swift in Sources */,
 				D5917325E80AEB8DCFFA1407 /* BilibiliURLParser.swift in Sources */,
 				FB326BD18985F7EE376245BB /* BilibiliAPIService.swift in Sources */,
 				33769383C0215133E1B5566C /* SampleData.swift in Sources */,
@@ -271,6 +278,7 @@
 				E4075A555EA124C64542359E /* VersionManagerSheet.swift in Sources */,
 				71B3EFADF059157B98C88E11 /* SessionHistoryView.swift in Sources */,
 				683127EAE0843BA609BAD7A8 /* AddSongSheet.swift in Sources */,
+				6E7E71D3B5D705808F375CF9 /* BilibiliLoginSheet.swift in Sources */,
 				704C0A562001C7B7BF7717FE /* PlaylistDetailView.swift in Sources */,
 				AAD0ADB514D3711CBE3E527D /* PlaylistsView.swift in Sources */,
 				A524D5B758CF5AB022FF9DB6 /* FullScreenPlayerView.swift in Sources */,

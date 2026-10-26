@@ -62,78 +62,111 @@ public final class BilibiliAPIService {
     
     // MARK: - Headers
     
-    public static let defaultHeaders: [String: String] = [
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
-        "Referer": "https://www.bilibili.com",
-        "Origin": "https://www.bilibili.com"
-    ]
+    public static var defaultHeaders: [String: String] {
+        var headers = [
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1",
+            "Referer": "https://www.bilibili.com",
+            "Origin": "https://www.bilibili.com"
+        ]
+        let cookieStr = BiliAccountManager.shared.cookieHeaderString
+        if !cookieStr.isEmpty {
+            headers["Cookie"] = cookieStr
+        }
+        return headers
+    }
     
     // MARK: - Fetch Video Details
     
+    /// Fetches video parts, CID, title, and cover using the official player pagelist API (avoids WAF 412)
     public func fetchVideoDetails(bvid: String, pageIndex: Int = 1) async throws -> BiliVideoDetails {
-        guard let url = URL(string: "https://api.bilibili.com/x/web-interface/view?bvid=\(bvid)") else {
+        // Step 1: Use player/pagelist which is immune to WAF 412
+        guard let pagelistUrl = URL(string: "https://api.bilibili.com/x/player/pagelist?bvid=\(bvid)") else {
             throw BiliAPIError.invalidURL
         }
         
-        var request = URLRequest(url: url)
+        var request = URLRequest(pagelistUrl)
         request.httpMethod = "GET"
         for (key, value) in Self.defaultHeaders {
             request.setValue(value, forHTTPHeaderField: key)
         }
+        request.setValue("https://www.bilibili.com/video/\(bvid)", forHTTPHeaderField: "Referer")
         
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw BiliAPIError.networkError("HTTP status code invalid")
+            throw BiliAPIError.networkError("Pagelist HTTP status \( (response as? HTTPURLResponse)?.statusCode ?? -1 )")
         }
         
-        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw BiliAPIError.decodingError
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let code = json["code"] as? Int, code == 0,
+              let pagesArray = json["data"] as? [[String: Any]],
+              !pagesArray.isEmpty else {
+            let msg = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String ?? "Failed to find video parts"
+            throw BiliAPIError.apiError(code: -1, message: msg)
         }
-        
-        let code = json["code"] as? Int ?? -1
-        if code != 0 {
-            let msg = json["message"] as? String ?? "Unknown error"
-            throw BiliAPIError.apiError(code: code, message: msg)
-        }
-        
-        guard let dataDict = json["data"] as? [String: Any],
-              let title = dataDict["title"] as? String,
-              let pic = dataDict["pic"] as? String else {
-            throw BiliAPIError.decodingError
-        }
-        
-        let owner = dataDict["owner"] as? [String: Any]
-        let uploader = owner?["name"] as? String ?? "Bilibili Artist"
-        let duration = dataDict["duration"] as? TimeInterval ?? 0
         
         var pages: [BiliPage] = []
-        if let pagesArray = dataDict["pages"] as? [[String: Any]] {
-            for pageItem in pagesArray {
-                let cid = pageItem["cid"] as? Int ?? 0
-                let page = pageItem["page"] as? Int ?? 1
-                let part = pageItem["part"] as? String ?? ""
-                let pageDuration = pageItem["duration"] as? TimeInterval ?? duration
-                pages.append(BiliPage(cid: cid, page: page, part: part, duration: pageDuration))
+        var resolvedTitle = "Bilibili Song"
+        var firstPic = "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80"
+        var totalDuration: TimeInterval = 0
+        
+        for item in pagesArray {
+            let cid = item["cid"] as? Int ?? 0
+            let page = item["page"] as? Int ?? 1
+            let part = item["part"] as? String ?? ""
+            let dur = item["duration"] as? TimeInterval ?? 0
+            if totalDuration == 0 { totalDuration = dur }
+            if resolvedTitle == "Bilibili Song" && !part.isEmpty {
+                resolvedTitle = part
             }
+            if let frame = item["first_frame"] as? String, !frame.isEmpty {
+                firstPic = frame.replacingOccurrences(of: "http://", with: "https://")
+            }
+            pages.append(BiliPage(cid: cid, page: page, part: part, duration: dur))
         }
         
-        // Find target CID based on requested pageIndex
         let targetCid: Int
         if let targetPage = pages.first(where: { $0.page == pageIndex }) {
             targetCid = targetPage.cid
-        } else if let firstPage = pages.first {
-            targetCid = firstPage.cid
+            if !targetPage.part.isEmpty { resolvedTitle = targetPage.part }
+        } else if let first = pages.first {
+            targetCid = first.cid
         } else {
-            targetCid = dataDict["cid"] as? Int ?? 0
+            throw BiliAPIError.noAudioStreamFound
+        }
+        
+        // Step 2: Try enriching title/uploader with view API if user is logged in (with graceful fallback)
+        var uploader = "Bilibili Artist"
+        if let viewUrl = URL(string: "https://api.bilibili.com/x/web-interface/view?bvid=\(bvid)") {
+            var viewReq = URLRequest(viewUrl)
+            for (key, value) in Self.defaultHeaders {
+                viewReq.setValue(value, forHTTPHeaderField: key)
+            }
+            viewReq.setValue("https://www.bilibili.com/video/\(bvid)", forHTTPHeaderField: "Referer")
+            if let (vData, vResp) = try? await session.data(for: viewReq),
+               let vHttp = vResp as? HTTPURLResponse, vHttp.statusCode == 200,
+               let vJson = try? JSONSerialization.jsonObject(with: vData) as? [String: Any],
+               let vCode = vJson["code"] as? Int, vCode == 0,
+               let vDataDict = vJson["data"] as? [String: Any] {
+                if let fullTitle = vDataDict["title"] as? String, !fullTitle.isEmpty {
+                    resolvedTitle = fullTitle
+                }
+                if let pic = vDataDict["pic"] as? String, !pic.isEmpty {
+                    firstPic = pic.replacingOccurrences(of: "http://", with: "https://")
+                }
+                if let owner = vDataDict["owner"] as? [String: Any],
+                   let ownerName = owner["name"] as? String, !ownerName.isEmpty {
+                    uploader = ownerName
+                }
+            }
         }
         
         return BiliVideoDetails(
             bvid: bvid,
             cid: targetCid,
-            title: title,
+            title: resolvedTitle,
             uploader: uploader,
-            picUrl: pic,
-            duration: duration,
+            picUrl: firstPic,
+            duration: totalDuration,
             pages: pages
         )
     }
@@ -141,11 +174,10 @@ public final class BilibiliAPIService {
     // MARK: - Feature 1: Pure Audio Stream Extraction (No Video Loaded)
     
     /// Requests Bilibili DASH media streams and extracts pure audio stream URLs.
-    /// fnval=16 requests DASH, where audio streams are delivered separately from video.
-    /// This saves data and battery, and enables pure audio playback.
+    /// Uses official player/playurl (without /wbi/) to avoid WAF 412 challenge.
     public func fetchAudioStream(bvid: String, cid: Int) async throws -> BiliAudioStreamInfo {
-        // fnval=16 (DASH format) or 80 (DASH with HDR/Dolby)
-        guard let url = URL(string: "https://api.bilibili.com/x/player/wbi/playurl?bvid=\(bvid)&cid=\(cid)&fnval=16") else {
+        // Use https://api.bilibili.com/x/player/playurl (fnval=16 specifies DASH audio streams)
+        guard let url = URL(string: "https://api.bilibili.com/x/player/playurl?bvid=\(bvid)&cid=\(cid)&fnval=16") else {
             throw BiliAPIError.invalidURL
         }
         
@@ -158,7 +190,8 @@ public final class BilibiliAPIService {
         
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw BiliAPIError.networkError("Invalid HTTP status")
+            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+            throw BiliAPIError.networkError("PlayURL HTTP status \(status)")
         }
         
         guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -175,6 +208,21 @@ public final class BilibiliAPIService {
               let dash = dataDict["dash"] as? [String: Any],
               let audioList = dash["audio"] as? [[String: Any]],
               !audioList.isEmpty else {
+            // Check if standard durl exists
+            if let dataDict = json["data"] as? [String: Any],
+               let durlList = dataDict["durl"] as? [[String: Any]],
+               let firstDurl = durlList.first,
+               let urlString = firstDurl["url"] as? String,
+               let streamUrl = URL(string: urlString) {
+                return BiliAudioStreamInfo(
+                    qualityId: 30216,
+                    qualityDescription: "Standard MP4 Audio",
+                    url: streamUrl,
+                    backupUrls: [],
+                    bandwidth: 128000,
+                    codecs: "mp4a"
+                )
+            }
             throw BiliAPIError.noAudioStreamFound
         }
         

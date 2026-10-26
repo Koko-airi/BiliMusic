@@ -1,142 +1,40 @@
 import Foundation
 
-/// Curated sample playlists loaded with real Bilibili music videos featuring multiple versions (Feature 4).
+/// Curated sample playlists loaded with real, verified Bilibili music videos featuring multiple versions (Feature 4).
 public struct SampleData {
     public static var defaultPlaylists: [Playlist] {
         [
-            jpopPlaylist,
             jayChouPlaylist,
-            lofiBeatsPlaylist
+            jpopPlaylist,
+            electronicPlaylist
         ]
     }
     
-    // MARK: - J-Pop & Anime
-    public static let jpopPlaylist: Playlist = {
-        let gunjou = Song(
-            title: "群青 (Gunjou)",
-            artist: "YOASOBI",
-            album: "THE BOOK",
-            artworkUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80",
-            versions: [
-                SongVersion(
-                    name: "Official Studio MV",
-                    bvid: "BV15k4y1q7g2",
-                    uploader: "YOASOBI Official",
-                    duration: 262,
-                    audioQuality: "192kbps DASH",
-                    picUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80"
-                ),
-                SongVersion(
-                    name: "THE FIRST TAKE (Live One-Take)",
-                    bvid: "BV1F54y1s7S8",
-                    uploader: "THE FIRST TAKE",
-                    duration: 254,
-                    audioQuality: "192kbps HQ",
-                    picUrl: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80"
-                ),
-                SongVersion(
-                    name: "Budokan Arena Live Tour",
-                    bvid: "BV1p44y1575U",
-                    uploader: "YOASOBI Live",
-                    duration: 275,
-                    audioQuality: "Live Soundboard",
-                    picUrl: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80"
-                )
-            ]
-        )
-        
-        let lemon = Song(
-            title: "Lemon",
-            artist: "米津玄師 (Kenshi Yonezu)",
-            album: "STRAY SHEEP",
-            artworkUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80",
-            versions: [
-                SongVersion(
-                    name: "Official MV",
-                    bvid: "BV1ws411A7z5",
-                    uploader: "Kenshi Yonezu Official",
-                    duration: 275,
-                    audioQuality: "192kbps DASH",
-                    picUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80"
-                ),
-                SongVersion(
-                    name: "Live Tour Concert",
-                    bvid: "BV1tb411q7sF",
-                    uploader: "Live Archive",
-                    duration: 290,
-                    audioQuality: "HQ Live",
-                    picUrl: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop&q=80"
-                ),
-                SongVersion(
-                    name: "Acoustic Fingerstyle Guitar",
-                    bvid: "BV1ab41147u8",
-                    uploader: "Guitar Solo UP",
-                    duration: 260,
-                    audioQuality: "Acoustic Hi-Fi",
-                    picUrl: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&auto=format&fit=crop&q=80"
-                )
-            ]
-        )
-        
-        let aoToNatsu = Song(
-            title: "青と夏 (Ao to Natsu)",
-            artist: "Mrs. GREEN APPLE",
-            album: "Attitude",
-            artworkUrl: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&auto=format&fit=crop&q=80",
-            versions: [
-                SongVersion(
-                    name: "Official Studio MV",
-                    bvid: "BV1ks411p767",
-                    uploader: "Mrs. GREEN APPLE",
-                    duration: 270,
-                    audioQuality: "192kbps DASH"
-                ),
-                SongVersion(
-                    name: "Arena Concert Live Version",
-                    bvid: "BV1oW4y1M7mF",
-                    uploader: "Rock In Japan Fest",
-                    duration: 285,
-                    audioQuality: "Live Multi-track"
-                )
-            ]
-        )
-        
-        return Playlist(
-            name: "J-Pop & Anime Masterpieces",
-            description: "Top modern J-Pop and Anime theme songs with multi-version live and acoustic arrangements.",
-            coverUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80",
-            songs: [gunjou, lemon, aoToNatsu]
-        )
-    }()
-    
-    // MARK: - Jay Chou Collection
+    // MARK: - Jay Chou Collection (周杰伦经典)
     public static let jayChouPlaylist: Playlist = {
         let nocturne = Song(
             title: "夜曲 (Nocturne)",
             artist: "周杰伦 (Jay Chou)",
             album: "十一月的萧邦 (November's Chopin)",
-            artworkUrl: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=600&auto=format&fit=crop&q=80",
+            artworkUrl: "https://i1.hdslb.com/bfs/archive/276f0b99946cc11ba336b7f46f69611f1c892b15.jpg",
             versions: [
                 SongVersion(
-                    name: "Official Studio MV",
-                    bvid: "BV1GJ411x7h7",
-                    uploader: "杰威尔音乐JVR",
-                    duration: 228,
-                    audioQuality: "192kbps DASH"
+                    name: "4K Remastered Official MV",
+                    bvid: "BV1Ek4y1r7Rg",
+                    cid: 460901307,
+                    uploader: "zyl2012_音乐无限",
+                    duration: 232,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i1.hdslb.com/bfs/archive/276f0b99946cc11ba336b7f46f69611f1c892b15.jpg"
                 ),
                 SongVersion(
-                    name: "Super Live Tour Concert",
-                    bvid: "BV1s7411i7mK",
-                    uploader: "Jay Tour Vault",
-                    duration: 240,
-                    audioQuality: "Live Soundboard"
-                ),
-                SongVersion(
-                    name: "Piano & Cello Unplugged Cover",
-                    bvid: "BV19x411p7tq",
-                    uploader: "Classical Piano UP",
-                    duration: 215,
-                    audioQuality: "Hi-Fi Instrumental"
+                    name: "2007 World Tour Live Concert",
+                    bvid: "BV1Zp4y1a7uZ",
+                    cid: 242034389,
+                    uploader: "薄暮思归",
+                    duration: 225,
+                    audioQuality: "Concert Soundboard",
+                    picUrl: "https://i0.hdslb.com/bfs/archive/583cd5c71350d91f9aba3d276a648c5a8e017007.jpg"
                 )
             ]
         )
@@ -145,28 +43,25 @@ public struct SampleData {
             title: "晴天 (Sunny Day)",
             artist: "周杰伦 (Jay Chou)",
             album: "叶惠美 (Ye Hui Mei)",
-            artworkUrl: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80",
+            artworkUrl: "https://i2.hdslb.com/bfs/archive/fd3eee1c3257e85941ee86f5123b83366fa3bf0d.jpg",
             versions: [
                 SongVersion(
-                    name: "Studio Original",
-                    bvid: "BV1ux411S7qX",
-                    uploader: "杰威尔音乐JVR",
-                    duration: 269,
-                    audioQuality: "192kbps DASH"
+                    name: "World Tour Stadium Live Singalong",
+                    bvid: "BV1Yv4y1Z7km",
+                    cid: 296423212,
+                    uploader: "音乐私藏馆",
+                    duration: 265,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i2.hdslb.com/bfs/archive/fd3eee1c3257e85941ee86f5123b83366fa3bf0d.jpg"
                 ),
                 SongVersion(
-                    name: "Carnival Tour Stadium Singalong",
-                    bvid: "BV1bx411a7yY",
-                    uploader: "World Tour Archive",
-                    duration: 280,
-                    audioQuality: "Live Concert 48kHz"
-                ),
-                SongVersion(
-                    name: "Acoustic Fingerstyle Arrangement",
-                    bvid: "BV13x411T7mE",
-                    uploader: "Guitar Master UP",
-                    duration: 250,
-                    audioQuality: "Studio Clean"
+                    name: "Vienna Golden Hall Orchestral",
+                    bvid: "BV1XG411c7SL",
+                    cid: 881163241,
+                    uploader: "达伦Asuka",
+                    duration: 162,
+                    audioQuality: "Hi-Fi Instrumental",
+                    picUrl: "https://i2.hdslb.com/bfs/archive/4daa91d40c6ace606ec4145eb2acdece9497e0b1.jpg"
                 )
             ]
         )
@@ -175,54 +70,126 @@ public struct SampleData {
             title: "七里香 (Common Jasmine Orange)",
             artist: "周杰伦 (Jay Chou)",
             album: "七里香",
-            artworkUrl: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80",
+            artworkUrl: "https://i0.hdslb.com/bfs/archive/e31b53d89a624c49f7f7056a9556f10d21de4c2b.jpg",
             versions: [
                 SongVersion(
-                    name: "Official MV",
-                    bvid: "BV1jx411T77e",
-                    uploader: "杰威尔音乐JVR",
-                    duration: 299,
-                    audioQuality: "192kbps DASH"
-                ),
-                SongVersion(
-                    name: "The Invincible Live Concert",
-                    bvid: "BV18t4y1U7rB",
-                    uploader: "Concert Live HD",
-                    duration: 310,
-                    audioQuality: "Live Stadium Mix"
+                    name: "4K Official Master MV",
+                    bvid: "BV1qD4y1U7fs",
+                    cid: 351660720,
+                    uploader: "音乐私藏馆",
+                    duration: 298,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i0.hdslb.com/bfs/archive/e31b53d89a624c49f7f7056a9556f10d21de4c2b.jpg"
                 )
             ]
         )
         
         return Playlist(
             name: "Jay Chou Classics (周杰伦经典)",
-            description: "Timeless masterpieces with studio masters, concert live singalongs, and fingerstyle covers.",
-            coverUrl: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=600&auto=format&fit=crop&q=80",
+            description: "Timeless masterpieces with studio masters, concert live singalongs, and acoustic editions.",
+            coverUrl: "https://i1.hdslb.com/bfs/archive/276f0b99946cc11ba336b7f46f69611f1c892b15.jpg",
             songs: [nocturne, sunnyDay, qiLiXiang]
         )
     }()
     
-    // MARK: - Lofi Beats
-    public static let lofiBeatsPlaylist: Playlist = {
+    // MARK: - J-Pop & Anime
+    public static let jpopPlaylist: Playlist = {
+        let gunjou = Song(
+            title: "群青 (Gunjou)",
+            artist: "YOASOBI",
+            album: "THE BOOK",
+            artworkUrl: "https://i2.hdslb.com/bfs/archive/e0243c366cf2424f8748cd5fa42a3a82b707ce0b.jpg",
+            versions: [
+                SongVersion(
+                    name: "Studio Recording Master",
+                    bvid: "BV118411w7Pa",
+                    cid: 979646717,
+                    uploader: "JLRS-LeoFM",
+                    duration: 251,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i2.hdslb.com/bfs/archive/e0243c366cf2424f8748cd5fa42a3a82b707ce0b.jpg"
+                ),
+                SongVersion(
+                    name: "Official Music Video",
+                    bvid: "BV15k4y1q7g2",
+                    cid: 1078558439,
+                    uploader: "YOASOBI",
+                    duration: 182,
+                    audioQuality: "192kbps HQ",
+                    picUrl: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80"
+                )
+            ]
+        )
+        
+        let lemon = Song(
+            title: "Lemon",
+            artist: "米津玄師 (Kenshi Yonezu)",
+            album: "STRAY SHEEP",
+            artworkUrl: "https://i2.hdslb.com/bfs/archive/b52bfef3cc286a6180f0e4eabb6edb144440b47f.png",
+            versions: [
+                SongVersion(
+                    name: "Official MV 1080P",
+                    bvid: "BV164411D7vc",
+                    cid: 109819229,
+                    uploader: "成宮光義",
+                    duration: 275,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i2.hdslb.com/bfs/archive/b52bfef3cc286a6180f0e4eabb6edb144440b47f.png"
+                ),
+                SongVersion(
+                    name: "2019 Tour Concert Live",
+                    bvid: "BV1cY41117NG",
+                    cid: 965303764,
+                    uploader: "蚕豆音乐侠",
+                    duration: 277,
+                    audioQuality: "Live Multi-track",
+                    picUrl: "https://i2.hdslb.com/bfs/archive/a805c30586c04949db918972959d2809f44a9d5f.png"
+                )
+            ]
+        )
+        
+        let aoToNatsu = Song(
+            title: "青と夏 (Ao to Natsu)",
+            artist: "Mrs. GREEN APPLE",
+            album: "Attitude",
+            artworkUrl: "https://i1.hdslb.com/bfs/archive/b9a3ea43496ccb77a5afb9939d4cdb5f516f3cdd.jpg",
+            versions: [
+                SongVersion(
+                    name: "Official Edition (On Vocal)",
+                    bvid: "BV1Xz8T69E2j",
+                    cid: 41122074018,
+                    uploader: "白詰草",
+                    duration: 284,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i1.hdslb.com/bfs/archive/b9a3ea43496ccb77a5afb9939d4cdb5f516f3cdd.jpg"
+                )
+            ]
+        )
+        
+        return Playlist(
+            name: "J-Pop & Anime Masterpieces",
+            description: "Modern J-Pop & Anime anthems featuring studio recordings and arena live tour editions.",
+            coverUrl: "https://i2.hdslb.com/bfs/archive/e0243c366cf2424f8748cd5fa42a3a82b707ce0b.jpg",
+            songs: [gunjou, lemon, aoToNatsu]
+        )
+    }()
+    
+    // MARK: - Electronic & Gaming
+    public static let electronicPlaylist: Playlist = {
         let shelter = Song(
             title: "Shelter",
             artist: "Porter Robinson & Madeon",
             album: "Shelter",
-            artworkUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80",
+            artworkUrl: "https://i1.hdslb.com/bfs/archive/e4176db6bbeb1db02ccdd4a3879e2f663521c337.jpg",
             versions: [
                 SongVersion(
-                    name: "Official Anime Film MV",
-                    bvid: "BV1gs411q752",
-                    uploader: "Porter Robinson",
-                    duration: 219,
-                    audioQuality: "192kbps DASH"
-                ),
-                SongVersion(
-                    name: "Shelter Live Tour Piano Edit",
-                    bvid: "BV1Ex411w7Q6",
-                    uploader: "EDM Live Sets",
-                    duration: 235,
-                    audioQuality: "Live Soundboard"
+                    name: "Official Remix & Short Film",
+                    bvid: "BV1ht411Q7NZ",
+                    cid: 65842375,
+                    uploader: "光着屁股奔跑",
+                    duration: 261,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i1.hdslb.com/bfs/archive/e4176db6bbeb1db02ccdd4a3879e2f663521c337.jpg"
                 )
             ]
         )
@@ -231,29 +198,24 @@ public struct SampleData {
             title: "Bad Apple!!",
             artist: "Nomico / Alstroemeria Records",
             album: "Lovelight",
-            artworkUrl: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80",
+            artworkUrl: "https://i1.hdslb.com/bfs/archive/26e326b6b6e10b1f2aed9523b369989a519da274.jpg",
             versions: [
                 SongVersion(
-                    name: "Shadow-Art MV Classic",
-                    bvid: "BV1fx411c7mD",
-                    uploader: "Touhou Nostalgia",
-                    duration: 218,
-                    audioQuality: "192kbps DASH"
-                ),
-                SongVersion(
-                    name: "Wagakki Band Live (Traditional Japanese Instruments)",
-                    bvid: "BV16x411A78B",
-                    uploader: "Wagakki Live",
-                    duration: 230,
-                    audioQuality: "Live Hi-Res"
+                    name: "4K 60FPS Remastered Classic",
+                    bvid: "BV1x5411o7Kn",
+                    cid: 505002580,
+                    uploader: "蒴奈",
+                    duration: 233,
+                    audioQuality: "192kbps DASH",
+                    picUrl: "https://i1.hdslb.com/bfs/archive/26e326b6b6e10b1f2aed9523b369989a519da274.jpg"
                 )
             ]
         )
         
         return Playlist(
-            name: "Electronic & Lofi Classics",
-            description: "Energetic electronic tracks and iconic melodies with live orchestra and acoustic edits.",
-            coverUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80",
+            name: "Electronic & Gaming Classics",
+            description: "Iconic electronic and gaming themes remastered in pure audio mode.",
+            coverUrl: "https://i1.hdslb.com/bfs/archive/26e326b6b6e10b1f2aed9523b369989a519da274.jpg",
             songs: [shelter, badApple]
         )
     }()

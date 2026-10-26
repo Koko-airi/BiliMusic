@@ -3,9 +3,11 @@ import SwiftUI
 /// Main container view with bottom tab bar, docked mini player, and full-screen player presentation
 public struct MainTabView: View {
     @StateObject private var playerManager = AudioPlayerManager.shared
+    @ObservedObject private var accountManager = BiliAccountManager.shared
     @State private var playlists: [Playlist] = SampleData.defaultPlaylists
     
     @State private var isFullScreenPresented: Bool = false
+    @State private var showingLoginSheet: Bool = false
     @State private var quickPlayInput: String = ""
     @State private var isQuickPlaying: Bool = false
     @State private var quickPlayError: String?
@@ -30,7 +32,7 @@ public struct MainTabView: View {
                 // Tab 3: Session & Settings
                 settingsTab
                     .tabItem {
-                        Label("Session & Settings", systemImage: "gearshape")
+                        Label("Account & Settings", systemImage: "person.crop.circle")
                     }
             }
             
@@ -45,6 +47,9 @@ public struct MainTabView: View {
         }
         .fullScreenCover(isPresented: $isFullScreenPresented) {
             FullScreenPlayerView(playerManager: playerManager)
+        }
+        .sheet(isPresented: $showingLoginSheet) {
+            BilibiliLoginSheet()
         }
     }
     
@@ -99,11 +104,99 @@ public struct MainTabView: View {
         }
     }
     
-    // MARK: - Settings & Session Tab
+    // MARK: - Settings & Account Tab
     
     private var settingsTab: some View {
         NavigationStack {
             List {
+                // Bilibili Account Section
+                Section(header: Text("Bilibili Account (账号状态)")) {
+                    if accountManager.isLoggedIn {
+                        HStack(spacing: 12) {
+                            if let faceUrl = accountManager.face, let url = URL(string: faceUrl) {
+                                AsyncImage(url: url) { phase in
+                                    if let img = phase.image {
+                                        img.resizable().scaledToFill()
+                                    } else {
+                                        Circle().fill(Color.pink.opacity(0.3))
+                                    }
+                                }
+                                .frame(width: 48, height: 48)
+                                .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .font(.system(size: 44))
+                                    .foregroundColor(.pink)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(accountManager.uname)
+                                    .font(.headline)
+                                
+                                HStack(spacing: 6) {
+                                    Text(accountManager.vipLabel)
+                                        .font(.caption2.weight(.bold))
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 2)
+                                        .background(accountManager.vipType > 0 ? Color.pink.opacity(0.15) : Color.gray.opacity(0.15))
+                                        .foregroundColor(accountManager.vipType > 0 ? .pink : .secondary)
+                                        .cornerRadius(4)
+                                    
+                                    if let mid = accountManager.mid {
+                                        Text("UID: \(mid)")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.vertical, 4)
+                        
+                        Button(role: .destructive, action: {
+                            accountManager.logout()
+                        }) {
+                            HStack {
+                                Spacer()
+                                Text("Log Out (退出登录)")
+                                Spacer()
+                            }
+                        }
+                    } else {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack {
+                                Image(systemName: "person.badge.key.fill")
+                                    .foregroundColor(.pink)
+                                    .font(.title3)
+                                Text("Log In to Bilibili")
+                                    .font(.headline)
+                            }
+                            
+                            Text("Logging in unlocks VIP high-bitrate audio (192k/320k) and eliminates guest WAF challenges.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            
+                            Button(action: {
+                                showingLoginSheet = true
+                            }) {
+                                HStack {
+                                    Spacer()
+                                    Image(systemName: "qrcode.viewfinder")
+                                    Text("Log In via Web / QR Code")
+                                        .fontWeight(.semibold)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 8)
+                                .background(Color.pink)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.top, 4)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+                
                 Section(header: Text("Playback Engine")) {
                     Toggle("Default to Music Mode (Sound Only)", isOn: $playerManager.musicModeOnly)
                     
@@ -150,7 +243,7 @@ public struct MainTabView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Settings & Session")
+            .navigationTitle("Account & Settings")
         }
     }
     

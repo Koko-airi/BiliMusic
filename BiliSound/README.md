@@ -9,10 +9,11 @@ Compatible with **iOS 17.0+ / 18.x / 26.2.1+**.
 ## Key Features
 
 ### 🎧 Feature 1: Pure "Music Player Mode" by Default (Zero Video Overhead)
-- **Audio-Only Streaming**: By default, the player fetches Bilibili's DASH manifest (`fnval=16`) from the PlayURL API (`https://api.bilibili.com/x/player/wbi/playurl`) and extracts the pure audio stream (`dash.audio[0]`), completely ignoring video streams.
+- **Audio-Only Streaming**: By default, the player fetches Bilibili's DASH manifest (`fnval=16`) from the official PlayURL API (`https://api.bilibili.com/x/player/playurl`) and extracts the pure audio stream (`dash.audio[0]`), completely ignoring video streams.
 - **Data & Battery Efficiency**: Saves up to 85% bandwidth and CPU cycles compared to full video playback; prevents device heating and screen wake locks.
 - **CDN Anti-Leech Bypass**: Automatically attaches required HTTP headers (`Referer: https://www.bilibili.com/video/<BVID>` and mobile Safari `User-Agent`) via `AVURLAssetHTTPHeaderFieldsKey` in `BilibiliAudioAssetFactory`, preventing HTTP 403 Forbidden errors from Bilibili's CDN.
 - **Background Audio**: Configured with `UIBackgroundModes: audio` and `AVAudioSession(category: .playback)` for continuous playback while the phone is locked or in other apps.
+- **Bilibili Account Authentication & High-Bitrate Audio**: Integrated `BiliAccountManager` and `BilibiliLoginSheet` support official Bilibili QR code / web login and manual `SESSDATA` input. Logging in unlocks VIP high-bitrate audio streams (192kbps / 320kbps / Hi-Res) and eliminates guest WAF 412 challenges.
 
 ---
 

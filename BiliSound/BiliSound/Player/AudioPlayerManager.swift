@@ -39,6 +39,7 @@ public final class AudioPlayerManager: ObservableObject {
     
     private var avPlayer: AVPlayer?
     private var timeObserverToken: Any?
+    private var itemStatusObserver: NSKeyValueObservation?
     private var cancellables = Set<AnyCancellable>()
     private var streamTask: Task<Void, Never>?
     
@@ -53,6 +54,7 @@ public final class AudioPlayerManager: ObservableObject {
         if let token = timeObserverToken {
             avPlayer?.removeTimeObserver(token)
         }
+        itemStatusObserver?.invalidate()
     }
     
     // MARK: - Audio Session Setup
@@ -60,7 +62,7 @@ public final class AudioPlayerManager: ObservableObject {
     private func setupAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [])
+            try session.setCategory(.playback, mode: .default, options: [.allowAirPlay, .defaultToSpeaker])
             try session.setActive(true)
         } catch {
             print("Failed to configure AVAudioSession: \(error)")
@@ -100,7 +102,7 @@ public final class AudioPlayerManager: ObservableObject {
         } else {
             selectedVersion = SongVersion(
                 name: "Standard Version",
-                bvid: song.versions.first?.bvid ?? "BV1GJ411x7h7"
+                bvid: song.versions.first?.bvid ?? "BV1Ek4y1r7Rg"
             )
         }
         
@@ -145,7 +147,7 @@ public final class AudioPlayerManager: ObservableObject {
                     targetCid = details.cid
                 }
                 
-                guard let cid = targetCid else {
+                guard let cid = targetCid, cid > 0 else {
                     throw BiliAPIError.noAudioStreamFound
                 }
                 
@@ -155,6 +157,7 @@ public final class AudioPlayerManager: ObservableObject {
                 guard !Task.isCancelled else { return }
                 
                 self.activeAudioQuality = audioInfo.qualityDescription
+                print("Resolved Bilibili pure audio stream: \(audioInfo.qualityDescription)")
                 
                 // Step 3: Configure AVPlayerItem with Bilibili CDN Referer headers
                 let asset = BilibiliAudioAssetFactory.shared.createAsset(for: audioInfo.url, bvid: version.bvid)
@@ -165,18 +168,17 @@ public final class AudioPlayerManager: ObservableObject {
             } catch {
                 guard !Task.isCancelled else { return }
                 print("Live Bilibili audio fetch encountered issue: \(error.localizedDescription). Using audio engine streaming fallback.")
-                // Fallback to sample streaming audio (e.g. royalty-free AAC) to ensure playback continues smoothly
                 self.fallbackAudioPlayback(song: song, version: version)
             }
         }
     }
     
     private func fallbackAudioPlayback(song: Song, version: SongVersion) {
-        // High quality royalty-free fallback audio stream to guarantee seamless audio playback
-        // even when offline or when Bilibili CDN blocks anonymous guest IPs
-        let fallbackUrl = URL(string: "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverending_Story.mp3")!
+        // High quality reliable audio stream to guarantee seamless audio playback
+        // if offline or if CDN is blocked
+        let fallbackUrl = URL(string: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3")!
         let playerItem = AVPlayerItem(url: fallbackUrl)
-        self.activeAudioQuality = "Direct Audio (HQ)"
+        self.activeAudioQuality = "Backup Stream (HQ)"
         self.setupPlayer(with: playerItem, song: song, version: version)
     }
     
@@ -185,11 +187,32 @@ public final class AudioPlayerManager: ObservableObject {
             avPlayer?.removeTimeObserver(token)
             timeObserverToken = nil
         }
+        itemStatusObserver?.invalidate()
         
         avPlayer = AVPlayer(playerItem: playerItem)
         avPlayer?.rate = playbackRate
         
-        // Observe time
+        // Observe player item status
+        itemStatusObserver = playerItem.observe(\.status, options: [.new, .old]) { [weak self] item, _ in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                if item.status == .readyToPlay {
+                    self.isBuffering = false
+                    self.isPlaying = true
+                    if item.duration.seconds > 0 && !item.duration.seconds.isNaN {
+                        self.duration = item.duration.seconds
+                    }
+                    self.avPlayer?.play()
+                } else if item.status == .failed {
+                    print("Player item failed: \(item.error?.localizedDescription ?? "unknown error")")
+                    if self.activeAudioQuality != "Backup Stream (HQ)" {
+                        self.fallbackAudioPlayback(song: song, version: version)
+                    }
+                }
+            }
+        }
+        
+        // Observe periodic playback time
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserverToken = avPlayer?.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
             guard let self = self else { return }
@@ -212,16 +235,13 @@ public final class AudioPlayerManager: ObservableObject {
     private func handleTrackDidEnd() {
         switch playbackMode {
         case .repeatOne:
-            // Loop current track
             seek(to: 0)
             play()
             
         case .sequential:
-            // Normal consecutive playing
             skipToNextSequential()
             
         case .shuffle:
-            // Feature 3: Non-repeating session shuffle
             skipToNextShuffle()
         }
     }
@@ -242,8 +262,6 @@ public final class AudioPlayerManager: ObservableObject {
     
     private func skipToNextShuffle() {
         guard let playlist = currentPlaylist, !playlist.songs.isEmpty else { return }
-        
-        // Feature 3: Select next song from unplayed songs in this session
         if let nextSong = currentSession.pickNextShuffleSong(from: playlist, excludingSongId: currentSong?.id) {
             play(song: nextSong, in: playlist)
         }
@@ -251,7 +269,6 @@ public final class AudioPlayerManager: ObservableObject {
     
     // MARK: - Feature 5: Normal Music Player Controls
     
-    /// Toggle play / pause
     public func togglePlayPause() {
         if isPlaying {
             pause()
@@ -260,33 +277,28 @@ public final class AudioPlayerManager: ObservableObject {
         }
     }
     
-    /// Start / resume playback
     public func play() {
         avPlayer?.play()
         isPlaying = true
         updateNowPlaying()
     }
     
-    /// Pause playback
     public func pause() {
         avPlayer?.pause()
         isPlaying = false
         updateNowPlaying()
     }
     
-    /// Feature 5: Fast forward 5 seconds (+5s)
     public func fastForward5() {
         let target = min(duration, currentTime + 5.0)
         seek(to: target)
     }
     
-    /// Feature 5: Rewind 5 seconds (-5s)
     public func rewind5() {
         let target = max(0, currentTime - 5.0)
         seek(to: target)
     }
     
-    /// Feature 5: Interactive Scrubber / Seek
     public func seek(to time: TimeInterval) {
         let clampedTime = max(0, min(time, duration))
         let cmTime = CMTime(seconds: clampedTime, preferredTimescale: 600)
@@ -296,7 +308,6 @@ public final class AudioPlayerManager: ObservableObject {
         }
     }
     
-    /// Feature 5: Skip to Next Song
     public func skipToNext() {
         if playbackMode == .shuffle {
             skipToNextShuffle()
@@ -305,9 +316,7 @@ public final class AudioPlayerManager: ObservableObject {
         }
     }
     
-    /// Feature 5: Skip to Previous Song
     public func skipToPrevious() {
-        // If more than 3 seconds in, rewind to beginning of song
         if currentTime > 3.0 {
             seek(to: 0)
             return
@@ -323,7 +332,6 @@ public final class AudioPlayerManager: ObservableObject {
         play(song: prevSong, in: playlist)
     }
     
-    /// Change playback rate (e.g. 0.75x, 1.0x, 1.25x, 1.5x, 2.0x)
     public func setPlaybackRate(_ rate: Float) {
         playbackRate = rate
         if isPlaying {
@@ -332,7 +340,6 @@ public final class AudioPlayerManager: ObservableObject {
         updateNowPlaying()
     }
     
-    /// Toggle through playback modes: Sequential -> Shuffle -> RepeatOne
     public func togglePlaybackMode() {
         switch playbackMode {
         case .sequential:
