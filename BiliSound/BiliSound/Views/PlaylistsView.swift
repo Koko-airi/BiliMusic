@@ -30,6 +30,8 @@ public struct PlaylistsView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            // Bug 2: Bottom padding prevents mini bar from occluding bottom playlist rows
+            .safeAreaPadding(.bottom, playerManager.currentSong != nil ? 80 : 0)
             .navigationTitle("BiliSound")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

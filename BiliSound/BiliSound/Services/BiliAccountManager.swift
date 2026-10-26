@@ -161,10 +161,10 @@ public final class BiliAccountManager: ObservableObject {
                 }
                 
                 let defaults = UserDefaults.standard
-                defaults.set(self.uname, forKey: kUname)
-                defaults.set(self.face, forKey: kFace)
-                defaults.set(self.mid, forKey: kMid)
-                defaults.set(self.vipType, forKey: kVipType)
+                defaults.set(self.uname, forKey: BiliAccountManager.kUname)
+                defaults.set(self.face, forKey: BiliAccountManager.kFace)
+                defaults.set(self.mid, forKey: BiliAccountManager.kMid)
+                defaults.set(self.vipType, forKey: BiliAccountManager.kVipType)
             } else if code == -101 {
                 // Session expired or invalid
                 self.isLoggedIn = false
@@ -189,13 +189,13 @@ public final class BiliAccountManager: ObservableObject {
     
     public func logout() {
         let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: kSessdata)
-        defaults.removeObject(forKey: kBiliJct)
-        defaults.removeObject(forKey: kDedeUserId)
-        defaults.removeObject(forKey: kUname)
-        defaults.removeObject(forKey: kFace)
-        defaults.removeObject(forKey: kMid)
-        defaults.removeObject(forKey: kVipType)
+        defaults.removeObject(forKey: BiliAccountManager.kSessdata)
+        defaults.removeObject(forKey: BiliAccountManager.kBiliJct)
+        defaults.removeObject(forKey: BiliAccountManager.kDedeUserId)
+        defaults.removeObject(forKey: BiliAccountManager.kUname)
+        defaults.removeObject(forKey: BiliAccountManager.kFace)
+        defaults.removeObject(forKey: BiliAccountManager.kMid)
+        defaults.removeObject(forKey: BiliAccountManager.kVipType)
         
         self.sessdata = ""
         self.biliJct = ""

@@ -101,6 +101,7 @@ public struct MainTabView: View {
                     }
                 }
             }
+            .safeAreaPadding(.bottom, playerManager.currentSong != nil ? 80 : 0)
             .navigationTitle("Quick Stream")
         }
     }
@@ -244,6 +245,7 @@ public struct MainTabView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            .safeAreaPadding(.bottom, playerManager.currentSong != nil ? 80 : 0)
             .navigationTitle("Account & Settings")
         }
     }

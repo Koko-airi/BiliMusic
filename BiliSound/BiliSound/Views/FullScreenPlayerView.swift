@@ -46,9 +46,13 @@ public struct FullScreenPlayerView: View {
                 }
                 .padding(.horizontal, 24)
                 
-                Spacer(minLength: 16)
+                Spacer(minLength: 12)
                 
-                // Feature 5: Scrubber Bar
+                // Bug 3: Formatted Track Time Labels (current time / total duration)
+                trackTimeLabels
+                    .padding(.horizontal, 24)
+                
+                // Feature 5 & Bug 4: Scrubber Bar
                 ScrubberBar(
                     currentTime: playerManager.currentTime,
                     duration: playerManager.duration,
@@ -176,6 +180,40 @@ public struct FullScreenPlayerView: View {
                 .foregroundColor(.white.opacity(0.7))
                 .lineLimit(1)
         }
+    }
+    
+    // Bug 3: Formatted track time labels (current time / total duration)
+    private var trackTimeLabels: some View {
+        HStack {
+            HStack(spacing: 5) {
+                Image(systemName: "clock")
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.6))
+                Text(formatTime(playerManager.currentTime))
+                    .font(.subheadline.monospacedDigit().weight(.semibold))
+                    .foregroundColor(.white)
+                Text("/")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.4))
+                Text(formatTime(playerManager.duration))
+                    .font(.subheadline.monospacedDigit().weight(.semibold))
+                    .foregroundColor(.white.opacity(0.75))
+            }
+            
+            Spacer()
+            
+            let remaining = max(0, playerManager.duration - playerManager.currentTime)
+            Text("-\(formatTime(remaining))")
+                .font(.caption.monospacedDigit())
+                .foregroundColor(.white.opacity(0.6))
+        }
+    }
+    
+    private func formatTime(_ time: TimeInterval) -> String {
+        guard !time.isNaN && time >= 0 else { return "00:00" }
+        let mins = Int(time) / 60
+        let secs = Int(time) % 60
+        return String(format: "%02d:%02d", mins, secs)
     }
     
     // Feature 4: Banner showing active version and quick re-roll button

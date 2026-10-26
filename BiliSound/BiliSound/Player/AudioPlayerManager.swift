@@ -83,13 +83,38 @@ public final class AudioPlayerManager: ObservableObject {
     
     // MARK: - Playback Invocation (Features 1, 2, 3, 4)
     
+    /// Starts playing a playlist from the beginning in consecutive order with a fresh, isolated session
+    public func startPlaylistConsecutive(_ playlist: Playlist) {
+        guard let first = playlist.songs.first else { return }
+        self.playbackMode = .sequential
+        self.currentSession = PlaySession()
+        self.play(song: first, in: playlist, resetSession: true)
+    }
+    
+    /// Starts random autoplay for a playlist with a fresh, isolated session guarantee (no repeats in session)
+    public func startPlaylistShuffle(_ playlist: Playlist) {
+        guard !playlist.songs.isEmpty else { return }
+        self.playbackMode = .shuffle
+        let freshSession = PlaySession()
+        self.currentSession = freshSession
+        if let randomSong = freshSession.pickNextShuffleSong(from: playlist) {
+            self.play(song: randomSong, in: playlist, resetSession: true)
+        }
+    }
+    
     /// Plays a song within a playlist.
     /// If specificVersion is nil, Feature 4 triggers: randomly picks one of the song's enabled versions.
     public func play(
         song: Song,
         specificVersion: SongVersion? = nil,
-        in playlist: Playlist
+        in playlist: Playlist,
+        resetSession: Bool = false
     ) {
+        // Bug 1: Initialize fresh session when switching between playlists or explicitly requested
+        if resetSession || self.currentPlaylist?.id != playlist.id {
+            self.currentSession = PlaySession()
+        }
+        
         self.currentPlaylist = playlist
         self.currentSong = song
         

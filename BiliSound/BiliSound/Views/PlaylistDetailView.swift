@@ -55,8 +55,12 @@ public struct PlaylistDetailView: View {
                             isPlayingCurrent: isCurrent && playerManager.isPlaying,
                             activeVersionName: isCurrent ? playerManager.currentVersion?.name : nil,
                             onSelect: {
-                                // Feature 4: Automatically picks a random version!
-                                playerManager.play(song: song, in: playlist)
+                                // Bug 1: Fresh session if switching playlists, then picks random version
+                                playerManager.play(
+                                    song: song,
+                                    in: playlist,
+                                    resetSession: playerManager.currentPlaylist?.id != playlist.id
+                                )
                             },
                             onManageVersions: {
                                 selectedSongForVersionManager = song
@@ -70,6 +74,8 @@ public struct PlaylistDetailView: View {
             }
         }
         .listStyle(.insetGrouped)
+        // Bug 2: Bottom safe area padding prevents mini bar from occluding the last list items
+        .safeAreaPadding(.bottom, playerManager.currentSong != nil ? 80 : 0)
         .navigationTitle(playlist.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -169,12 +175,9 @@ public struct PlaylistDetailView: View {
     // Feature 2: Play consecutive & Shuffle actions
     private var actionButtonsSection: some View {
         HStack(spacing: 12) {
-            // Feature 2: Consecutive Normal Play
+            // Feature 2 & Bug 1: Consecutive Normal Play with fresh, isolated session
             Button(action: {
-                playerManager.playbackMode = .sequential
-                if let first = playlist.songs.first {
-                    playerManager.play(song: first, in: playlist)
-                }
+                playerManager.startPlaylistConsecutive(playlist)
             }) {
                 HStack {
                     Image(systemName: "play.fill")
@@ -189,12 +192,9 @@ public struct PlaylistDetailView: View {
             }
             .buttonStyle(.plain)
             
-            // Feature 2 & 3: Shuffle Autoplay with single-session non-repeating guarantee
+            // Feature 2, 3 & Bug 1: Shuffle Autoplay with fresh, isolated session guarantee
             Button(action: {
-                playerManager.playbackMode = .shuffle
-                if let randomSong = playerManager.currentSession.pickNextShuffleSong(from: playlist) {
-                    playerManager.play(song: randomSong, in: playlist)
-                }
+                playerManager.startPlaylistShuffle(playlist)
             }) {
                 HStack {
                     Image(systemName: "shuffle")
@@ -216,7 +216,7 @@ public struct PlaylistDetailView: View {
         .padding(.vertical, 4)
     }
     
-    // Feature 3: Session progress badge
+    // Feature 3 & Bug 1: Session progress badge
     private var sessionStatusBanner: some View {
         Button(action: { showingSessionHistory = true }) {
             HStack(spacing: 8) {
@@ -224,10 +224,18 @@ public struct PlaylistDetailView: View {
                     .foregroundColor(.cyan)
                     .font(.subheadline)
                 
-                let playedInSession = playerManager.currentSession.playedSongIds.count
-                Text("Session: \(playedInSession)/\(playlist.songs.count) played • Non-repeating guarantee")
-                    .font(.caption.weight(.medium))
-                    .foregroundColor(.secondary)
+                let isCurrentPlaylist = playerManager.currentPlaylist?.id == playlist.id
+                let playedInSession = isCurrentPlaylist ? playerManager.currentSession.playedSongIds.count : 0
+                
+                if isCurrentPlaylist {
+                    Text("Session: \(playedInSession)/\(playlist.songs.count) played • Non-repeating guarantee")
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Session: Ready • Start play or shuffle to create isolated session")
+                        .font(.caption.weight(.medium))
+                        .foregroundColor(.secondary)
+                }
                 
                 Spacer()
                 

@@ -103,13 +103,14 @@ public struct NowPlayingMiniBar: View {
                             .fill(Color(white: 0.15).opacity(0.95))
                             .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                         
-                        // Subtle top progress line
+                        // Subtle top progress line with strictly clamped width
                         VStack {
                             GeometryReader { geo in
-                                let progress = playerManager.duration > 0 ? (playerManager.currentTime / playerManager.duration) : 0
+                                let progress = min(max(playerManager.duration > 0 ? (playerManager.currentTime / playerManager.duration) : 0.0, 0.0), 1.0)
+                                let lineWidth = min(max(geo.size.width * CGFloat(progress), 0), geo.size.width)
                                 Rectangle()
                                     .fill(LinearGradient(colors: [.pink, .cyan], startPoint: .leading, endPoint: .trailing))
-                                    .frame(width: geo.size.width * CGFloat(progress), height: 2)
+                                    .frame(width: lineWidth, height: 2)
                             }
                             .frame(height: 2)
                             Spacer()

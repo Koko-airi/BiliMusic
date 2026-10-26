@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Feature 5: Interactive Scrubber with live drag feedback and time formatters
+/// Feature 5 & Bug 4: Interactive Scrubber with strictly clamped bounds to prevent overflow
 public struct ScrubberBar: View {
     let currentTime: TimeInterval
     let duration: TimeInterval
@@ -23,21 +23,30 @@ public struct ScrubberBar: View {
         isDragging ? dragTime : currentTime
     }
     
-    private var progress: Double {
-        guard duration > 0 else { return 0 }
-        return min(1.0, max(0.0, displayTime / duration))
+    /// Bug 4: Progress ratio clamped strictly between 0 and 1
+    private var progressRatio: Double {
+        guard duration > 0, !duration.isNaN else { return 0.0 }
+        let rawRatio = displayTime / duration
+        return min(max(rawRatio, 0.0), 1.0)
     }
     
     public var body: some View {
         VStack(spacing: 6) {
             GeometryReader { geo in
+                let totalWidth = geo.size.width
+                // Bug 4: Strictly clamp active track width within [0, totalWidth]
+                let activeTrackWidth = min(max(totalWidth * CGFloat(progressRatio), 0), totalWidth)
+                let thumbSize: CGFloat = isDragging ? 18 : 12
+                let maxOffset = max(0, totalWidth - thumbSize)
+                let thumbOffset = min(max((totalWidth * CGFloat(progressRatio)) - (thumbSize / 2), 0), maxOffset)
+                
                 ZStack(alignment: .leading) {
                     // Track background
                     Capsule()
                         .fill(Color.white.opacity(0.2))
                         .frame(height: isDragging ? 7 : 4)
                     
-                    // Filled progress
+                    // Filled progress - guaranteed not to overflow totalWidth
                     Capsule()
                         .fill(
                             LinearGradient(
@@ -46,26 +55,29 @@ public struct ScrubberBar: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: max(0, geo.size.width * CGFloat(progress)), height: isDragging ? 7 : 4)
+                        .frame(width: activeTrackWidth, height: isDragging ? 7 : 4)
                     
-                    // Scrubber thumb
+                    // Scrubber thumb - strictly clamped within [0, totalWidth - thumbSize]
                     Circle()
                         .fill(Color.white)
                         .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 1)
-                        .frame(width: isDragging ? 18 : 12, height: isDragging ? 18 : 12)
-                        .offset(x: max(0, min(geo.size.width - (isDragging ? 18 : 12), (geo.size.width * CGFloat(progress)) - (isDragging ? 9 : 6))))
+                        .frame(width: thumbSize, height: thumbSize)
+                        .offset(x: thumbOffset)
                 }
+                .clipped()
                 .contentShape(Rectangle())
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { value in
+                            guard totalWidth > 0 else { return }
                             isDragging = true
-                            let percent = max(0, min(1, value.location.x / geo.size.width))
-                            dragTime = percent * duration
+                            let percent = min(max(value.location.x / totalWidth, 0.0), 1.0)
+                            dragTime = percent * max(0, duration)
                         }
                         .onEnded { value in
-                            let percent = max(0, min(1, value.location.x / geo.size.width))
-                            let targetTime = percent * duration
+                            guard totalWidth > 0 else { return }
+                            let percent = min(max(value.location.x / totalWidth, 0.0), 1.0)
+                            let targetTime = percent * max(0, duration)
                             onSeek(targetTime)
                             isDragging = false
                         }
@@ -81,7 +93,8 @@ public struct ScrubberBar: View {
                 
                 Spacer()
                 
-                Text("-" + formatTime(max(0, duration - displayTime)))
+                let remaining = max(0, duration - displayTime)
+                Text("-" + formatTime(remaining))
                     .font(.caption2.monospacedDigit())
                     .foregroundColor(.white.opacity(0.8))
             }
@@ -89,9 +102,9 @@ public struct ScrubberBar: View {
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
-        guard !time.isNaN && time >= 0 else { return "0:00" }
+        guard !time.isNaN && time >= 0 else { return "00:00" }
         let mins = Int(time) / 60
         let secs = Int(time) % 60
-        return String(format: "%d:%02d", mins, secs)
+        return String(format: "%02d:%02d", mins, secs)
     }
 }
